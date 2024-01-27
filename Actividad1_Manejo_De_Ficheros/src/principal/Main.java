@@ -1,36 +1,39 @@
 package principal;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import clases.Articulo;
 import clases.ArticuloImp;
-import clases.FicherosOps;
+import clases.FicherosUtils;
 
 public class Main {
 	static ArrayList<Articulo> articulos = new ArrayList<Articulo>();
 	private static Scanner sc = new Scanner(System.in);
 
 	public static void main(String[] args) throws InterruptedException {
-		// TODO Auto-generated method stub
 		System.out.println("CARGANDO FICHERO..... --------");
 		System.out.println("********************************");
 		// PRIMERO LEEMOS EL FICHERO Y GENERAMOS EN CASO DE NO EXISTIR
-		articulos = FicherosOps.lecturaFichero();
+		FicherosUtils.lecturaFichero(articulos);
 
 		int opcion;
 		do {
 			menu();
 			opcion = sc.nextInt();
 			sc.nextLine();
+
 			switch (opcion) {
 			case 1:
-				ArticuloImp.anadirArticulo(articulos);
+				ArticuloImp.anadirArticulo(articulos, sc);
 				TimeUnit.SECONDS.sleep(2);
 				break;
 			case 2:
-				if (ArticuloImp.borrarArticulo(articulos)) {
+				if (ArticuloImp.borrarArticulo(articulos, sc)) {
 					System.out.println("El artículo a sido eliminado con éxito");
 				} else {
 					System.out.println("El id proporcionado no a sido encontrado");
@@ -39,7 +42,7 @@ public class Main {
 				break;
 
 			case 3:
-				ArticuloImp.consultarArticulo(articulos);
+				ArticuloImp.consultarArticulo(articulos, sc);
 				TimeUnit.SECONDS.sleep(2);
 				break;
 
@@ -52,12 +55,25 @@ public class Main {
 				break;
 
 			case 6:
-				FicherosOps.exportarArticulosACSV();
+				FicherosUtils.exportarArticulosACSV(articulos);
 				TimeUnit.SECONDS.sleep(2);
 				break;
 			}
 		} while (opcion != 5);
-
+		
+		System.out.println("Se cierra el programa.");
+		TimeUnit.SECONDS.sleep(1);
+		
+		try(FileOutputStream file = new FileOutputStream("articulos.dat", false);
+				ObjectOutputStream buffer = new ObjectOutputStream(file)){
+			for(Articulo c : articulos) {
+				buffer.writeObject(c);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("El objeto no a podido ser añadido");
+		}
+		
 	}
 
 	public static void menu() {
